@@ -24,6 +24,7 @@ namespace TestArmo
         const int IdleThresholdInSeconds = 2;
         int finalCount = 0;
         int allCount = 0;
+        int prevAllCount = 0;
         public Form1()
         {
             InitializeComponent();
@@ -110,6 +111,7 @@ namespace TestArmo
                 doubleBufferedTreeView1.Nodes.Clear();
                 finalCount = 0;
                 allCount = 0;
+                prevAllCount = 0;
                 cts?.Cancel();
                 cts = new CancellationTokenSource();
             }
@@ -154,6 +156,7 @@ namespace TestArmo
                     {
                         directoriesQueue.Enqueue(file);
                     }
+
                     allCount++;
                 }
                 foreach (string dir in Directory.GetDirectories(directoryPath))
@@ -241,7 +244,7 @@ namespace TestArmo
 
             }
 
-            if (pauseEvent.WaitOne(0) && !queueUpdated && (DateTime.Now - lastQueueUpdateTime).TotalSeconds >= IdleThresholdInSeconds)
+            if (pauseEvent.WaitOne(0) && prevAllCount == allCount &&!queueUpdated && (DateTime.Now - lastQueueUpdateTime).TotalSeconds >= IdleThresholdInSeconds)
             {
                 queueMonitorTimer.Stop();
                 label2.Text = $"Затрачено {lastQueueUpdateTime - startTime}";
@@ -249,6 +252,7 @@ namespace TestArmo
                 label4.Text = $"Всего {allCount}";
                 label1.Text = "Поиск завершен";
             }
+            prevAllCount = allCount;
         }
         private void AddFileToTreeView(string filePath)
         {
