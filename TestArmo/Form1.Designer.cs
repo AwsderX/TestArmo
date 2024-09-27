@@ -104,6 +104,7 @@
             buttonPause.TabIndex = 1;
             buttonPause.Text = "Пауза";
             buttonPause.UseVisualStyleBackColor = true;
+            buttonPause.Click += buttonPause_Click;
             // 
             // label1
             // 

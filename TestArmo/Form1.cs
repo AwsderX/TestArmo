@@ -7,6 +7,10 @@ namespace TestArmo
 {
     public partial class Form1 : Form
     {
+        private ManualResetEvent pauseEvent = new ManualResetEvent(true);
+        private CancellationTokenSource cts = new CancellationTokenSource();
+
+
         bool hddDisk = false;
         string selectedPath = string.Empty;
         string searchPattern = string.Empty;
@@ -79,18 +83,23 @@ namespace TestArmo
         }
         private void buttonSearchStart_Click(object sender, EventArgs e)
         {
+            pauseEvent.Set();
             if (selectedPath != string.Empty)
             {
                 TypeDisk(selectedPath);
                 if (hddDisk)
                 {
-                    Task.Run(() => SearchFilesHDD(selectedPath));
+                    Task.Run(() => SearchFilesHDD(selectedPath, cts.Token));
                     queueMonitorTimer.Start();
                     searchPattern = textBoxSearch.Text;
                     label1.Text = "Поиск начался";
                     //Thread mainThread = new Thread(() => SearchFilesHDD(selectedPath));
                     //mainThread.Start();
                     //mainThread.Join();
+                }
+                else
+                {
+
                 }
 
             }
@@ -107,11 +116,16 @@ namespace TestArmo
                 }
             }
         }
-        private void SearchFilesHDD(string directoryPath)
+        private void SearchFilesHDD(string directoryPath, CancellationToken token)
         {
             Regex regex = new Regex(searchPattern, RegexOptions.IgnoreCase);
             foreach (string file in Directory.GetFiles(directoryPath))
             {
+                if (token.IsCancellationRequested)
+                {
+                    break; 
+                }
+                pauseEvent.WaitOne();
                 string str = Path.GetFileName(file);
                 if (regex.IsMatch(str))
                 {
@@ -122,9 +136,9 @@ namespace TestArmo
             {
                 try
                 {
-                    SearchFilesHDD(dir);
+                    SearchFilesHDD(dir, cts.Token);
                 }
-                catch{}
+                catch { }
             }
         }
         private void QueueMonitorTimer_Tick(object sender, EventArgs e)
@@ -171,5 +185,9 @@ namespace TestArmo
             return newNode;
         }
 
+        private void buttonPause_Click(object sender, EventArgs e)
+        {
+            pauseEvent.Reset();
+        }
     }
 }
