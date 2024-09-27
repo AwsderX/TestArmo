@@ -160,10 +160,10 @@ namespace TestArmo
                 {
                     if (token.IsCancellationRequested)
                     {
-                        return; // Прерываем задачу, если был запрос на отмену
+                        return; 
                     }
                     await Task.Delay(1);
-                    // Рекурсивный вызов для обработки поддиректорий
+                    
                     SearchFiles(dir, token);
                 }
             }
