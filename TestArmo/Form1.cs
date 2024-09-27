@@ -7,25 +7,24 @@ namespace TestArmo
 {
     public partial class Form1 : Form
     {
-        private ManualResetEvent pauseEvent = new ManualResetEvent(true);
-        private CancellationTokenSource cts = new CancellationTokenSource();
+        ManualResetEvent pauseEvent = new ManualResetEvent(true);
+        CancellationTokenSource cts = new CancellationTokenSource();
 
-
+        Task searchTask;
         bool hddDisk = false;
         string selectedPath = string.Empty;
         string searchPattern = string.Empty;
         ConcurrentQueue<string> directoriesQueue = new();
-        private System.Windows.Forms.Timer queueMonitorTimer;
+        System.Windows.Forms.Timer queueMonitorTimer;
+
+        DateTime lastQueueUpdateTime;
+        const int IdleThresholdInSeconds = 2;
         public Form1()
         {
             InitializeComponent();
-            treeView1.SuspendLayout();
             queueMonitorTimer = new System.Windows.Forms.Timer();
             queueMonitorTimer.Interval = 200;
             queueMonitorTimer.Tick += QueueMonitorTimer_Tick;
-            treeView1.ResumeLayout();
-
-
         }
 
         private void TypeDisk(string path)
@@ -83,25 +82,66 @@ namespace TestArmo
         }
         private void buttonSearchStart_Click(object sender, EventArgs e)
         {
+            cts?.Cancel();
+            cts = new CancellationTokenSource();
             pauseEvent.Set();
             if (selectedPath != string.Empty)
             {
                 TypeDisk(selectedPath);
+                searchPattern = textBoxSearch.Text;
                 if (hddDisk)
                 {
-                    Task.Run(() => SearchFilesHDD(selectedPath, cts.Token));
-                    queueMonitorTimer.Start();
-                    searchPattern = textBoxSearch.Text;
-                    label1.Text = "Поиск начался";
+                    searchTask = Task.Run(() => SearchFilesHDD(selectedPath, cts.Token));
                     //Thread mainThread = new Thread(() => SearchFilesHDD(selectedPath));
                     //mainThread.Start();
                     //mainThread.Join();
                 }
                 else
                 {
-
+                    searchTask = Task.Run(() => SearchFiles(selectedPath, cts.Token));
                 }
+                lastQueueUpdateTime = DateTime.Now; 
+                queueMonitorTimer.Start();
+                label1.Text = "Поиск начался";
 
+            }
+        }
+        private async Task SearchFiles(string directoryPath, CancellationToken token)
+        {
+            Regex regex = new Regex(searchPattern, RegexOptions.IgnoreCase);
+            try
+            {
+                foreach (string file in Directory.GetFiles(directoryPath))
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    pauseEvent.WaitOne();
+
+                    string str = Path.GetFileName(file);
+                    if (regex.IsMatch(str))
+                    {
+                        directoriesQueue.Enqueue(file);
+                    }
+                }
+                foreach (string dir in Directory.GetDirectories(directoryPath))
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        return; // Прерываем задачу, если был запрос на отмену
+                    }
+                    await Task.Delay(1);
+                    // Рекурсивный вызов для обработки поддиректорий
+                    SearchFiles(dir, token);
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                lock (Console.Out)
+                {
+                    Console.WriteLine($"Нет доступа к директории: {directoryPath}");
+                }
             }
         }
 
@@ -123,7 +163,7 @@ namespace TestArmo
             {
                 if (token.IsCancellationRequested)
                 {
-                    break; 
+                    break;
                 }
                 pauseEvent.WaitOne();
                 string str = Path.GetFileName(file);
@@ -143,13 +183,25 @@ namespace TestArmo
         }
         private void QueueMonitorTimer_Tick(object sender, EventArgs e)
         {
+            bool queueUpdated = false;
+
             while (!directoriesQueue.IsEmpty)
             {
                 if (directoriesQueue.TryDequeue(out string filePath))
                 {
+                    treeView1.SuspendLayout();
                     AddFileToTreeView(filePath);
-                    //treeView1.ExpandAll();
+                    treeView1.ResumeLayout();
+
+                    lastQueueUpdateTime = DateTime.Now;
+                    queueUpdated = true;
                 }
+            }
+
+            if (!queueUpdated && (DateTime.Now - lastQueueUpdateTime).TotalSeconds >= IdleThresholdInSeconds)
+            {
+                queueMonitorTimer.Stop(); 
+                label1.Text = "Поиск завершен";
             }
         }
         private void AddFileToTreeView(string filePath)
@@ -188,6 +240,12 @@ namespace TestArmo
         private void buttonPause_Click(object sender, EventArgs e)
         {
             pauseEvent.Reset();
+            label1.Text = "Пауза";
+        }
+
+        private void buttonDel_Click(object sender, EventArgs e)
+        {
+            Application.Restart();
         }
     }
 }

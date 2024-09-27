@@ -86,6 +86,7 @@
             buttonDel.TabIndex = 1;
             buttonDel.Text = "Сбросить";
             buttonDel.UseVisualStyleBackColor = true;
+            buttonDel.Click += buttonDel_Click;
             // 
             // textBoxSearch
             // 
