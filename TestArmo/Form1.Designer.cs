@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            treeView1 = new TreeView();
             buttonPath = new Button();
             labelPath = new Label();
             buttonSearchStart = new Button();
@@ -36,14 +35,11 @@
             textBoxSearch = new TextBox();
             buttonPause = new Button();
             label1 = new Label();
+            doubleBufferedTreeView1 = new DoubleBufferedTreeView();
+            label2 = new Label();
+            label3 = new Label();
+            label4 = new Label();
             SuspendLayout();
-            // 
-            // treeView1
-            // 
-            treeView1.Location = new Point(12, 12);
-            treeView1.Name = "treeView1";
-            treeView1.Size = new Size(1003, 662);
-            treeView1.TabIndex = 0;
             // 
             // buttonPath
             // 
@@ -117,11 +113,52 @@
             label1.TabIndex = 2;
             label1.Text = "label1";
             // 
+            // doubleBufferedTreeView1
+            // 
+            doubleBufferedTreeView1.Location = new Point(12, 12);
+            doubleBufferedTreeView1.Name = "doubleBufferedTreeView1";
+            doubleBufferedTreeView1.Size = new Size(1018, 662);
+            doubleBufferedTreeView1.TabIndex = 4;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            label2.Location = new Point(1036, 265);
+            label2.Name = "label2";
+            label2.Size = new Size(52, 21);
+            label2.TabIndex = 5;
+            label2.Text = "label2";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            label3.Location = new Point(1036, 296);
+            label3.Name = "label3";
+            label3.Size = new Size(52, 21);
+            label3.TabIndex = 5;
+            label3.Text = "label2";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            label4.Location = new Point(1036, 333);
+            label4.Name = "label4";
+            label4.Size = new Size(52, 21);
+            label4.TabIndex = 5;
+            label4.Text = "label2";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1222, 686);
+            ClientSize = new Size(1352, 686);
+            Controls.Add(label4);
+            Controls.Add(label3);
+            Controls.Add(label2);
+            Controls.Add(doubleBufferedTreeView1);
             Controls.Add(textBoxSearch);
             Controls.Add(label1);
             Controls.Add(labelPath);
@@ -129,16 +166,14 @@
             Controls.Add(buttonDel);
             Controls.Add(buttonSearchStart);
             Controls.Add(buttonPath);
-            Controls.Add(treeView1);
             Name = "Form1";
             Text = "Form1";
+            FormClosing += Form1_FormClosing;
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
-
-        private TreeView treeView1;
         private Button buttonPath;
         private Label labelPath;
         private Button buttonSearchStart;
@@ -146,5 +181,9 @@
         private TextBox textBoxSearch;
         private Button buttonPause;
         private Label label1;
+        private DoubleBufferedTreeView doubleBufferedTreeView1;
+        private Label label2;
+        private Label label3;
+        private Label label4;
     }
 }
