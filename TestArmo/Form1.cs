@@ -215,6 +215,9 @@ namespace TestArmo
         }
         private void QueueMonitorTimer_Tick(object sender, EventArgs e)
         {
+            label2.Text = $"Затрачено {lastQueueUpdateTime - startTime}";
+            label3.Text = $"Найдено {finalCount}";
+            label4.Text = $"Всего {allCount}";
             bool queueUpdated = false;
             doubleBufferedTreeView1.BeginUpdate();
             doubleBufferedTreeView1.SuspendLayout();
