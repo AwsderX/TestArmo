@@ -13,6 +13,7 @@ namespace TestArmo
         ManualResetEvent pauseEvent = new ManualResetEvent(true);
         CancellationTokenSource cts = new CancellationTokenSource();
 
+        int finalTick = 0;
         bool hddDisk = false;
         string selectedPath = string.Empty;
         string searchPattern = string.Empty;
@@ -218,7 +219,7 @@ namespace TestArmo
         }
         private void QueueMonitorTimer_Tick(object sender, EventArgs e)
         {
-            label2.Text = $"Затрачено {lastQueueUpdateTime - startTime}";
+            label2.Text = $"Затрачено {DateTime.Now - startTime}";
             label3.Text = $"Найдено {finalCount}";
             label4.Text = $"Всего {allCount}";
             bool queueUpdated = false;
@@ -243,11 +244,13 @@ namespace TestArmo
                 doubleBufferedTreeView1.EndUpdate();
 
             }
+            
+            if (prevAllCount == allCount) { finalTick++; } else { finalTick=0; }
 
-            if (pauseEvent.WaitOne(0) && prevAllCount == allCount &&!queueUpdated && (DateTime.Now - lastQueueUpdateTime).TotalSeconds >= IdleThresholdInSeconds)
+            if (pauseEvent.WaitOne(0) && finalTick == 5 && !queueUpdated)
             {
                 queueMonitorTimer.Stop();
-                label2.Text = $"Затрачено {lastQueueUpdateTime - startTime}";
+                label2.Text = $"Затрачено {DateTime.Now - startTime}";
                 label3.Text = $"Найдено {finalCount}";
                 label4.Text = $"Всего {allCount}";
                 label1.Text = "Поиск завершен";
