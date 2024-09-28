@@ -250,7 +250,7 @@ namespace TestArmo
             if (pauseEvent.WaitOne(0) && finalTick == 5 && !queueUpdated)
             {
                 queueMonitorTimer.Stop();
-                label2.Text = $"Затрачено {DateTime.Now - startTime}";
+                label2.Text = $"Затрачено {DateTime.Now - startTime - TimeSpan.FromSeconds(1)}";
                 label3.Text = $"Найдено {finalCount}";
                 label4.Text = $"Всего {allCount}";
                 label1.Text = "Поиск завершен";
